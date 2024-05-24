@@ -24,7 +24,7 @@ public class CommentService {
         CommonPost commonPost = commonPostRepository.findById(postId)
                 .orElseThrow(InvalidTableIdException::new);
 
-        requestDto.setUserId(MemberUtil.getMemberId());
+        commonPost.setUserId();
 
         Comment comment;
         if (commentId == null) {
@@ -32,7 +32,7 @@ public class CommentService {
         } else {
             Comment parentComment = commentRepository.findById(commentId)
                     .orElseThrow(InvalidTableIdException::new);
-            requestDto.setPostUserId(commonPost.getUserId());
+//            requestDto.setPostUserId(commonPost.getUserId());
             comment = Comment.of(parentComment, requestDto);
         }
         comment = commentRepository.save(comment);

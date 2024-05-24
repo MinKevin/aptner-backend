@@ -2,6 +2,9 @@ package com.aptner.v3.board.common_post.service;
 
 import com.aptner.v3.board.common_post.CommonPostRepository;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.jayway.jsonpath.JsonPath;
+import org.json.JSONArray;
+import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -9,14 +12,17 @@ import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMock
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.web.server.LocalServerPort;
 import org.springframework.test.web.servlet.MockMvc;
+import org.springframework.test.web.servlet.MvcResult;
 import org.springframework.test.web.servlet.result.MockMvcResultMatchers;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.context.WebApplicationContext;
 
+import java.nio.charset.StandardCharsets;
+import java.util.ArrayList;
+
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.*;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @SpringBootTest(webEnvironment = SpringBootTest.WebEnvironment.RANDOM_PORT)
@@ -61,8 +67,8 @@ class BlindPostAndCommentTest {
     void ADMIN_댓글이_LIST의_0번째_INDEX에_있는지_확인() throws Exception {
         //given
         mockMvc.perform(
-                get(prefix + "/boards/1")
-        )
+                        get(prefix + "/boards/1")
+                )
                 .andExpect(status().isOk())
                 .andDo(print())
                 .andExpect(MockMvcResultMatchers.jsonPath("$.data.comments[0:1].admin").value(true));
@@ -70,11 +76,19 @@ class BlindPostAndCommentTest {
 
     @Test
     void visible이_false일_경우_게시글_blind처리() throws Exception {
-        mockMvc.perform(
-            get(prefix + "/boards")
-        )
+        MvcResult mvcResult = mockMvc.perform(
+                        get(prefix + "/boards")
+                )
                 .andExpect(status().isOk())
                 .andDo(print())
-                .andExpect(MockMvcResultMatchers.jsonPath("$.data.visible").value(false));
+                .andReturn();
+
+        JSONArray jsonArray = new JSONArray(
+                JsonPath.parse(mvcResult.getResponse().getContentAsString(StandardCharsets.UTF_8)).read("$.data.[?(@.visible == false)].content").toString()
+                );
+
+        for (int i = 0; i < jsonArray.length(); i++) {
+            Assertions.assertEquals("비밀 게시글입니다.", jsonArray.get(0));
+        }
     }
 }

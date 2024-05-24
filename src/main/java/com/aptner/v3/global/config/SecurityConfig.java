@@ -64,11 +64,11 @@ public class SecurityConfig {
                 .anyRequest().authenticated());
 
 
-        http.addFilterBefore(AuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
+//        http.addFilterBefore(AuthenticationFilter(), UsernamePasswordAuthenticationFilter.class);
         return http.build();
     }
 
-    @Bean
+//    @Bean
     public JwtFilter AuthenticationFilter() {
         return new JwtFilter(jwtUtil);
     }

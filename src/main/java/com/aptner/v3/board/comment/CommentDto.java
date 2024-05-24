@@ -14,11 +14,9 @@ public class CommentDto {
     @Getter
     @Setter
     public static class Request {
-        private long userId;
-        private long postUserId;
         @NotBlank
         private String content;
-        private boolean visible;
+        private boolean visible = true;
     }
 
     @Getter
